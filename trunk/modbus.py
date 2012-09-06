@@ -180,15 +180,3 @@ def AddOptions(parser):
     group.add_option("--modbus-data", help="Use data for for modbus function", default="", metavar="DATA")
     group.add_option("--modbus-timeout", help="Timeout for modbus protocol (seconds)", default=8, type="float", metavar="TIMEOUT")
     parser.add_option_group(group)
-
-def main( argv ):
-    if len(argv)>1:
-        for arg in argv[1:]:
-           splitted = arg.split(':')
-           host = splitted[0]
-           port = splitted[1] if len(splitted)>1 else 502
-           TestModbus(host,port).Test()
-
-if __name__=="__main__":
-    main(sys.argv)
-
