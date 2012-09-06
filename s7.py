@@ -254,17 +254,6 @@ class s7:
 
         return res
 
-def main( argv ):
-    if len(argv)>1:
-        for arg in argv[1:]:
-            splitted = arg.split(':')
-            host = splitted[0]
-            port = splitted[1] if len(splitted)>1 else 102
-            TestS7(host,port).Test()
-
-if __name__=="__main__":
-    main(sys.argv)
-
 def BruteTsap(ip,port,src_tsaps=(0x100,0x200),dst_tsaps=(0x102,0x200,0x201) ):
     for src_tsap in src_tsaps:
         for dst_tsap in dst_tsaps:
