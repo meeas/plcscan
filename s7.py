@@ -14,7 +14,6 @@ from optparse import OptionGroup
 
 import struct
 import socket
-import sys
 import string
 
 __FILTER = "".join([' '] + [' ' if chr(x) not in string.printable or chr(x) in string.whitespace else chr(x) for x in range(1,256)])
