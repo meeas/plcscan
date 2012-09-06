@@ -10,9 +10,14 @@ __author__ = 'defanov'
 
 from struct import pack,unpack
 import socket
-import sys
 
 from optparse import OptionGroup
+
+import string
+
+__FILTER = "".join([' '] + [' ' if chr(x) not in string.printable or chr(x) in string.whitespace else chr(x) for x in range(1,256)])
+def StripUnprintable(msg):
+    return msg.translate(__FILTER)
 
 class ModbusProtocolError(Exception):
     def __init__(self, message, packet=''):
@@ -139,7 +144,7 @@ def Scan(ip,port,options):
             if options.modbus_function:
                 try:
                     response = con.Request(options.modbus_function, data)
-                    unitInfo.append("Response: %s\t(%s)" % (response,response.encode('hex')))
+                    unitInfo.append("Response: %s\t(%s)" % (StripUnprintable(response),response.encode('hex')))
                 except ModbusError as e:
                     if e.code:
                         unitInfo.append("Response error: %s" % e.message)
