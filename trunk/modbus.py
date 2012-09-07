@@ -121,8 +121,8 @@ class Modbus:
             raise ModbusProtocolError('Packet format (reply for device info) wrong',res)
 
 def Scan(ip,port,options):
+    res = False
     try:
-        res = False
         slaveId = ''
         deviceInfo = ''
         info = ''
@@ -172,10 +172,10 @@ def Scan(ip,port,options):
 
     except ModbusProtocolError as e:
         print "%s:%d Modbus protocol error: %s (packet: %s)" % (ip,port,e.message,e.packet.encode('hex'))
-        return False
+        return res
     except socket.error as e:
         print "%s:%d %s" % (ip,port,e)
-        return False
+        return res
 
 def AddOptions(parser):
     group = OptionGroup(parser, "Modbus scanner")
