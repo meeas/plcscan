@@ -1,5 +1,5 @@
 """
-File: plc_scan.py
+File: plcscan.py
 Desc: PLC scanner
 Version: 0.1
 
@@ -87,6 +87,9 @@ def scan(argv):
                 res = modbus.Scan(host,port,options)
             else:
                 res = modbus.Scan(host,port,options) or s7.Scan(host,port,options)
+
+            if not res:
+                print "%s:%d unknown protocol" % (host,port)
 
 
     status("Scan complete\n")
