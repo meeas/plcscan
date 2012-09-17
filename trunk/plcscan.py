@@ -22,10 +22,10 @@ def get_ip_list(mask):
     try:
         net_addr,mask = mask.split('/')
         mask = int(mask)
-        start, = struct.unpack('!L',socket.inet_aton(net_addr))
+        start, = struct.unpack('!L', socket.inet_aton(net_addr))
         start &= 0xFFFFFFFF << (32-mask)
         end = start | ( 0xFFFFFFFF >> mask )
-        return [ socket.inet_ntoa( struct.pack('!L',addr) ) for addr in range(start+1,end) ]
+        return [socket.inet_ntoa(struct.pack('!L', addr)) for addr in range(start+1, end)]
     except (struct.error,socket.error):
         return []
 
@@ -35,29 +35,27 @@ def scan(argv):
         description = """Scan IP range for PLC devices. Support MODBUS and S7COMM protocols
         """
     )
-    parser.add_option("--hosts-list",dest="hosts_file",help="Scan hosts from FILE",metavar="FILE")
-    parser.add_option("--ports",dest="ports",help="Scan ports from PORTS",metavar="PORTS",default="102,502")
-    parser.add_option("--timeout", dest="connect_timeout", help="Connection timeout (seconds)", metavar="TIMEOUT",type="float", default=1)
+    parser.add_option("--hosts-list", dest="hosts_file", help="Scan hosts from FILE", metavar="FILE")
+    parser.add_option("--ports", dest="ports", help="Scan ports from PORTS", metavar="PORTS", default="102,502")
+    parser.add_option("--timeout", dest="connect_timeout", help="Connection timeout (seconds)", metavar="TIMEOUT", type="float", default=1)
 
     modbus.AddOptions(parser)
     s7.AddOptions(parser)
 
-    (options,args) = parser.parse_args(argv)
+    (options, args) = parser.parse_args(argv)
 
     scan_hosts = []
     if options.hosts_file:
         try:
-            scan_hosts = [file.strip() for file in open(options.hosts_file,'r')]
+            scan_hosts = [file.strip() for file in open(options.hosts_file, 'r')]
         except IOError:
             print "Can't open file %s" % options.hosts_file
 
     for ip in args:
-        if '/' in ip:
-            scan_hosts += get_ip_list(ip)
-        else:
-            scan_hosts.append(ip)
+        scan_hosts.extend(get_ip_list(ip) if '/' in ip else
+                          [ip])
 
-    scan_ports = [ int(port) for port in options.ports.split(',') ]
+    scan_ports = [int(port) for port in options.ports.split(',')]
 
     if not scan_hosts:
         print "No targets to scan\n\n"
@@ -73,23 +71,23 @@ def scan(argv):
         else:
             ports = scan_ports
         for port in ports:
-            status( "%s:%d...\r" % (host,port) )
+            status("%s:%d...\r" % (host, port))
             try:
-                sock = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.settimeout(options.connect_timeout)
-                sock.connect( (host,port) )
+                sock.connect((host,port))
             except socket.error:
                 continue
 
             if port == 102:
-                res = s7.Scan(host,port,options)
+                res = s7.Scan(host, port, options)
             elif port == 502:
-                res = modbus.Scan(host,port,options)
+                res = modbus.Scan(host, port, options)
             else:
-                res = modbus.Scan(host,port,options) or s7.Scan(host,port,options)
+                res = modbus.Scan(host, port, options) or s7.Scan(host, port, options)
 
             if not res:
-                print "%s:%d unknown protocol" % (host,port)
+                print "%s:%d unknown protocol" % (host, port)
 
 
     status("Scan complete\n")

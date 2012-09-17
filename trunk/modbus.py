@@ -76,19 +76,19 @@ class ModbusPacket:
         return self
 
 class Modbus:
-    def __init__(self,ip,port=502,uid=0,timeout=8):
+    def __init__(self, ip, port=502, uid=0, timeout=8):
         self.ip = ip
         self.port = port
         self.uid = uid
         self.timeout = timeout
 
     def Request(self, functionId, data=''):
-        sock = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(self.timeout)
 
-        sock.connect( (self.ip,self.port) )
+        sock.connect((self.ip,self.port))
 
-        sock.send( ModbusPacket(0,self.uid,functionId,data).pack() )
+        sock.send(ModbusPacket(0, self.uid, functionId, data).pack())
 
         reply = sock.recv(1024)
 
@@ -98,7 +98,7 @@ class Modbus:
         response = ModbusPacket().unpack(reply)
 
         if response.unitId != self.uid:
-            raise ModbusProtocolError('Unexpected unit ID or incorrect packet',reply)
+            raise ModbusProtocolError('Unexpected unit ID or incorrect packet', reply)
 
         if response.functionId != functionId:
             raise ModbusError(ord(response.data[0]))
@@ -106,30 +106,49 @@ class Modbus:
         return response.data
 
     def DeviceInfo(self):
-        res = self.Request(0x2b,'\x0e\x01\00')
+        res = self.Request(0x2b, '\x0e\x01\00')
 
         if res and len(res)>5:
             objectsCount = ord(res[5])
             data = res[6:]
             info = ''
-            for i in range(0,objectsCount):
+            for i in range(0, objectsCount):
                 info += data[2:ord(data[1])]
                 info += ' '
                 data = data[2+ord(data[1]):]
             return info
         else:
-            raise ModbusProtocolError('Packet format (reply for device info) wrong',res)
+            raise ModbusProtocolError('Packet format (reply for device info) wrong', res)
 
-def Scan(ip,port,options):
+def ScanUnit(ip, port, uid, timeout, function=None, data=''):
+    con = Modbus(ip, port, uid, timeout)
+
+    unitInfo = []
+    if function:
+        try:
+            response = con.Request(function, data)
+            unitInfo.append("Response: %s\t(%s)" % (StripUnprintable(response), response.encode('hex')))
+        except ModbusError as e:
+            if e.code:
+                unitInfo.append("Response error: %s" % e.message)
+            else:
+                return unitInfo
+
+    try:
+        deviceInfo = con.DeviceInfo()
+        unitInfo.append("Device: %s" % deviceInfo)
+    except ModbusError as e:
+        if e.code:
+            unitInfo.append("Device info error: %s" % e.message)
+        else:
+            return unitInfo
+
+    return unitInfo
+
+def Scan(ip, port, options):
     res = False
     try:
-        slaveId = ''
-        deviceInfo = ''
-        info = ''
-        if options.modbus_data:
-            data = options.modbus_data.decode('string-escape')
-        else:
-            data = ''
+        data = options.modbus_data.decode('string-escape') if options.modbus_data else ''
 
         if options.brute_uid:
             uids = [0,255] + range(1,255)
@@ -139,30 +158,11 @@ def Scan(ip,port,options):
             uids = [0,255]
 
         for uid in uids:
-            con = Modbus(ip,port,uid,options.modbus_timeout)
-            unitInfo = []
-            if options.modbus_function:
-                try:
-                    response = con.Request(options.modbus_function, data)
-                    unitInfo.append("Response: %s\t(%s)" % (StripUnprintable(response),response.encode('hex')))
-                except ModbusError as e:
-                    if e.code:
-                        unitInfo.append("Response error: %s" % e.message)
-                    else:
-                        continue
-
-            try:
-                deviceInfo = con.DeviceInfo()
-                unitInfo.append("Device: %s" % deviceInfo)
-            except ModbusError as e:
-                if e.code:
-                    unitInfo.append("Device info error: %s" % e.message)
-                else:
-                    continue
+            unitInfo = ScanUnit(ip, port, uid, options.modbus_timeout, options.modbus_function, data)
 
             if unitInfo:
                 if not res:
-                    print "%s:%d Modbus/TCP" % (ip,port)
+                    print "%s:%d Modbus/TCP" % (ip, port)
                     res = True
                 print "  Unit ID: %d" % uid
                 for line in unitInfo:
@@ -171,10 +171,10 @@ def Scan(ip,port,options):
         return res
 
     except ModbusProtocolError as e:
-        print "%s:%d Modbus protocol error: %s (packet: %s)" % (ip,port,e.message,e.packet.encode('hex'))
+        print "%s:%d Modbus protocol error: %s (packet: %s)" % (ip, port, e.message, e.packet.encode('hex'))
         return res
     except socket.error as e:
-        print "%s:%d %s" % (ip,port,e)
+        print "%s:%d %s" % (ip, port, e)
         return res
 
 def AddOptions(parser):
