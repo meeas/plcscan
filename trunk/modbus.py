@@ -113,7 +113,7 @@ class Modbus:
             data = res[6:]
             info = ''
             for i in range(0, objectsCount):
-                info += data[2:ord(data[1])]
+                info += data[2:2+ord(data[1])]
                 info += ' '
                 data = data[2+ord(data[1]):]
             return info

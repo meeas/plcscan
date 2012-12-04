@@ -76,6 +76,7 @@ def scan(argv):
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.settimeout(options.connect_timeout)
                 sock.connect((host,port))
+                sock.close()
             except socket.error:
                 continue
 
