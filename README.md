@@ -2,17 +2,17 @@ Tool for scan PLC devices over s7comm or modbus protocols.
 (based on code from Dmitry Efanov (Positive Research))
 
 ## Usage examples:
-
-'plcscan.py 192.168.0.1
+```
+plcscan.py 192.168.0.1
 plcscan.py --timeout 2 192.168.0.1:102 10.0.0.0/24
 plcscan.py --hosts-list hosts.txt'
-
+```
 where file hosts.txt looks like:
-
-' 192.168.1.15
+```
+ 192.168.1.15
  192.168.1.107:102
  example.host:502'
- 
+```
 ## Output examples:
 ### Siemens PLC
 ```
