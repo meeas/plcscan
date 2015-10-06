@@ -1,5 +1,6 @@
 Tool for scan PLC devices over s7comm or modbus protocols.
-(based on code from Dmitry Efanov (Positive Research))
+
+This project is forked from code from Dmitry Efanov (Positive Research) originally posted to Google Code.
 
 ## Usage examples:
 ```
