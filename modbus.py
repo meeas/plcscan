@@ -162,19 +162,19 @@ def Scan(ip, port, options):
 
             if unitInfo:
                 if not res:
-                    print "%s:%d Modbus/TCP" % (ip, port)
+                    print("%s:%d Modbus/TCP" % (ip, port))
                     res = True
-                print "  Unit ID: %d" % uid
+                print("  Unit ID: %d" % uid)
                 for line in unitInfo:
-                    print "    %s" % line
+                    print("    %s" % line)
 
         return res
 
     except ModbusProtocolError as e:
-        print "%s:%d Modbus protocol error: %s (packet: %s)" % (ip, port, e.message, e.packet.encode('hex'))
+        print("%s:%d Modbus protocol error: %s (packet: %s)" % (ip, port, e.message, e.packet.encode('hex')))
         return res
     except socket.error as e:
-        print "%s:%d %s" % (ip, port, e)
+        print("%s:%d %s" % (ip, port, e))
         return res
 
 def AddOptions(parser):

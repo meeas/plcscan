@@ -281,8 +281,8 @@ def GetIdentity(ip, port, src_tsap, dst_tsap):
                       7:'Basic Firmware'
                   },
                   'packer': {
-                      (1, 6): lambda(packet): "{0:s} v.{2:d}.{3:d}".format(*unpack('!20sHBBH', packet)),
-                      (7,): lambda(packet): "{0:s} v.{3:d}.{4:d}.{5:d}".format(*unpack('!20sHBBBB', packet))
+                      (1, 6): lambda packet: "{0:s} v.{2:d}.{3:d}".format(*unpack('!20sHBBH', packet)),
+                      (7,): lambda packet: "{0:s} v.{3:d}.{4:d}.{5:d}".format(*unpack('!20sHBBBB', packet))
                   }
                 },
         0x1c:
@@ -301,9 +301,9 @@ def GetIdentity(ip, port, src_tsap, dst_tsap):
                       11:'Location designation of a module'
                   },
                   'packer': {
-                      (1, 2, 5): lambda(packet): "%s" % packet[:24],
-                      (3, 7, 8): lambda(packet): "%s" % packet[:32],
-                      (4,): lambda(packet): "%s" % packet[:26]
+                      (1, 2, 5): lambda packet: "%s" % packet[:24],
+                      (3, 7, 8): lambda packet: "%s" % packet[:32],
+                      (4,): lambda packet: "%s" % packet[:26]
                   }
                 }
     }
@@ -343,12 +343,12 @@ def Scan(ip, port, options):
     try:
         res = BruteTsap(ip, port, src_tsaps, dst_tsaps)
     except socket.error as e:
-        print "%s:%d %s" % (ip, port, e)
+        print("%s:%d %s" % (ip, port, e))
 
     if not res:
         return False
 
-    print "%s:%d S7comm (src_tsap=0x%x, dst_tsap=0x%x)" % (ip, port, res[0], res[1])
+    print("%s:%d S7comm (src_tsap=0x%x, dst_tsap=0x%x)" % (ip, port, res[0], res[1]))
 
     # sometimes unexpected exceptions occures, so try to get identity several time
     identities = []
@@ -357,10 +357,10 @@ def Scan(ip, port, options):
             identities = GetIdentity(ip, port, res[0], res[1])
             break
         except (S7ProtocolError, socket.error) as e:
-            print "  %s" % e
+            print("  %s" % e)
 
     for line in identities:
-        print "  %s" % line
+        print("  %s" % line)
 
     return True
 
